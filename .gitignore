@@ -1,3 +1,4 @@
 .idea/
 .env
 .gitattributes
+__pycache__
