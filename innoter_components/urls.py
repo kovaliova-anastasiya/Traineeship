@@ -1,6 +1,5 @@
 from rest_framework import routers
 from innoter_components.views import TagViewSet, PageViewSet, PostViewSet
-# from django.urls import path, include
 
 tag_router = routers.SimpleRouter()
 tag_router.register(r'tags', TagViewSet)  # префикс для набора маршрутов

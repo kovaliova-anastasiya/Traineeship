@@ -15,8 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+import innoter_user.urls
 from innoter_components.urls import tag_router, page_router, post_router
-from innoter_user.urls import user_router
 
 
 urlpatterns = [
@@ -24,5 +24,5 @@ urlpatterns = [
     path('', include(tag_router.urls)),
     path('', include(page_router.urls)),
     path('', include(post_router.urls)),
-    path('', include(user_router.urls)),
+    path('users/', include(innoter_user.urls)),
 ]
