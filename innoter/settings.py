@@ -45,10 +45,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'user' application
     'innoter_user.apps.InnoterUserConfig',
-    # 'components' application
-    'innoter_components.apps.InnoterComponentsConfig',
+    'innoter_tags.apps.InnoterTagsConfig',
+    'innoter_pages.apps.InnoterPagesConfig',
+    'innoter_posts.apps.InnoterPostsConfig',
     'rest_framework',
 ]
 
@@ -143,7 +143,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),

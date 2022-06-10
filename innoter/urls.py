@@ -16,13 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 import innoter_user.urls
-from innoter_components.urls import tag_router, page_router, post_router
+from innoter_tags.urls import tag_router
+from innoter_pages.urls import page_router
+from innoter_posts.urls import post_router
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('users/', include(innoter_user.urls)),
     path('', include(tag_router.urls)),
     path('', include(page_router.urls)),
-    path('', include(post_router.urls)),
-    path('users/', include(innoter_user.urls)),
+    path('', include(post_router.urls))
 ]

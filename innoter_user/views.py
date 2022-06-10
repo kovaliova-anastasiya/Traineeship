@@ -5,7 +5,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from innoter_user.models import User
 from innoter_user.serializers import RegisterUserSerializer, \
     UpdateUserSerializer, ListUserSerializer, \
-    DetailUserSerializer, MyTokenObtainPairSerializer
+    DetailUserSerializer, MyTokenObtainPairSerializer, \
+    DeleteUserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -13,7 +14,8 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_classes = {'list': ListUserSerializer,
                           'create': RegisterUserSerializer,
                           'update': UpdateUserSerializer,
-                          'retrieve': DetailUserSerializer}
+                          'retrieve': DetailUserSerializer,
+                          'delete': DeleteUserSerializer}
 
     def get_serializer_class(self):
         serializer = self.serializer_classes.get(self.action, None)

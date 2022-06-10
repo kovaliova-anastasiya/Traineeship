@@ -68,3 +68,9 @@ class DetailUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
+
+
+class DeleteUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')

@@ -20,6 +20,6 @@ services:
       - POSTGRES_PASSWORD=innoter
       - POSTGRES_DB=innoter_dev
     ports:
-      - 5432
+      - 59355:5432
 volumes:
   postgres_data:
