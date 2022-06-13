@@ -1,7 +1,5 @@
 .idea/
 .env
 .gitattributes
-__pycache__
-/innoter/__pycache__/
-/innoter_user/__pycache__/
-/innoter_components/__pycache__/
+__pycache__/
+data/
