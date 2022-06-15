@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
 
-class LikeActionSerializer(serializers.Serializer):
+class FollowActionSerializer(serializers.Serializer):
     ACTIONS = (
-        ('LIKE', 'like'),
-        ('UNLIKE', 'unlike'),
+        ('FOLLOW', 'follow'),
+        ('UNFOLLOW', 'unfollow'),
     )
 
     action = serializers.ChoiceField(choices=ACTIONS,

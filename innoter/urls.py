@@ -17,8 +17,9 @@ from django.contrib import admin
 from django.urls import path, include
 import innoter_user.urls
 from innoter_tags.urls import tag_router
-from innoter_pages.urls import page_router
+from innoter_pages.urls import page_router, urlpatterns as page_urls
 from innoter_posts.urls import post_router
+
 
 
 urlpatterns = [
@@ -27,4 +28,4 @@ urlpatterns = [
     path('', include(tag_router.urls)),
     path('', include(page_router.urls)),
     path('', include(post_router.urls))
-]
+] + page_urls
