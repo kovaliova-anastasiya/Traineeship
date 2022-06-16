@@ -149,3 +149,6 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'ROTATE_REFRESH_TOKENS': True,
 }
+
+# # добавила, чтобы можно было блокировать страницы
+# DATE_INPUT_FORMATS = '%Y/%m/%d %H:%M:%S.%f'

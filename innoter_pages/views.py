@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from innoter_pages.models import Page
 from innoter_pages.serializers import OverviewFollowersSerializer, \
-OverviewRequestsSerializer
+    OverviewRequestsSerializer
 from innoter_pages.serializers import PageListSerializer, \
     PageCreateSerializer, PageUpdateSerializer, \
     PageRetrieveSerializer, PageSerializer
@@ -10,6 +10,8 @@ from innoter_tags.serializers import TagListSerializer
 from innoter_pages.follow_action import FollowActionSerializer
 from innoter_user.serializers import ListUserSerializer, \
     UpdateUserSerializer
+from innoter_pages.approve_action import ApproveActionSerializer
+from innoter_pages.block_action import BlockActionSerializer
 
 
 class PageViewSet(viewsets.ModelViewSet):
@@ -48,7 +50,7 @@ class NewPageViewSet(viewsets.ModelViewSet):
                 current_page.follow_requests.remove(request.user)
 
         page_serializer = PageSerializer(data=request.data, instance=current_page, partial=True,
-                                           context={'request', request})
+                                         context={'request', request})
         if not page_serializer.is_valid():
             return Response(page_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         page_serializer.save()
@@ -85,4 +87,60 @@ class MyFollowRequestsOverview(viewsets.ModelViewSet):
 
 
 class ApproveFollowRequestView(viewsets.ModelViewSet):
-    pass
+    queryset = Page.objects.all()
+    serializer_class = PageSerializer
+
+    def partial_update(self, request, *args, **kwargs):
+        current_page = self.get_object()
+
+        if 'action' in request.data:
+            action_serializer = ApproveActionSerializer(data=request.data)
+            if not action_serializer.is_valid():
+                return Response(action_serializer.errors, status.HTTP_400_BAD_REQUEST)
+            action = action_serializer.data.get('action')
+
+            potential_follower_pk = kwargs.get('foll_pk')
+
+            if action == 'APPROVE':
+                print(current_page.follow_requests.get(id=potential_follower_pk))
+                current_page.followers.add(current_page.follow_requests.get(id=potential_follower_pk))
+                current_page.follow_requests.remove(current_page.follow_requests.get(id=potential_follower_pk))
+            if action == 'REJECT':
+                current_page.follow_requests.remove(current_page.follow_requests.get(potential_follower_pk))
+
+        page_serializer = PageSerializer(data=request.data, instance=current_page, partial=True,
+                                         context={'request', request})
+        if not page_serializer.is_valid():
+            return Response(page_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        page_serializer.save()
+        return Response(page_serializer.data, status=status.HTTP_200_OK)
+
+
+class BlockPageView(viewsets.ModelViewSet):
+    queryset = Page.objects.all()
+    serializer_class = PageSerializer
+
+    def partial_update(self, request, *args, **kwargs):
+        block_page = self.get_object()
+
+        if 'action' in request.data:
+            action_serializer = BlockActionSerializer(data=request.data)
+            if not action_serializer.is_valid():
+                return Response(action_serializer.errors, status.HTTP_400_BAD_REQUEST)
+            action = action_serializer.data.get('action')
+
+            print(block_page.unblock_date)
+
+            if action == 'BLOCK':
+                block_page.unblock_date = action_serializer.data.get('unblock_date')
+            if action == 'UNBLOCK':
+                block_page.unblock_date = None
+            print(action_serializer.data.get('unblock_date'))
+            print(block_page.unblock_date)
+
+        page_serializer = PageSerializer(data=request.data, instance=block_page, partial=True,
+                                         context={'request', request})
+        if not page_serializer.is_valid():
+            return Response(page_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        page_serializer.save()
+        return Response(page_serializer.data, status=status.HTTP_200_OK)

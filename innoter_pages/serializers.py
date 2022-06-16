@@ -10,7 +10,7 @@ class PageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Page
-        fields = ('followers', 'follow_requests', 'followers_count')
+        fields = ('followers', 'follow_requests', 'followers_count', 'unblock_date')
 
     @staticmethod
     def get_followers_count(self):
