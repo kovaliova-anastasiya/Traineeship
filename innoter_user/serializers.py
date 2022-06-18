@@ -17,7 +17,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class ListUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
+        fields = ('pk', 'first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):

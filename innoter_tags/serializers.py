@@ -5,13 +5,13 @@ from innoter_tags.models import Tag
 class TagListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'page')
 
 
 class TagCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('name',)
+        fields = ('name', 'page')
 
 
 class TagUpdateSerializer(serializers.ModelSerializer):

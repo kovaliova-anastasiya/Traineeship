@@ -10,32 +10,40 @@ class PageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Page
-        fields = ('followers', 'follow_requests', 'followers_count', 'unblock_date')
+        fields = ('followers', 'follow_requests', 'followers_count', 'unblock_date',
+                  'tags')
 
     @staticmethod
     def get_followers_count(self):
         return self.followers.count()
 
 
-class OverviewFollowersSerializer(serializers.ModelSerializer):
+class ShowTagsAttachedSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Page
+            fields = ('pk', 'tags')
+
+
+class ShowFollowersSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField()
+    followers = ListUserSerializer(many=True)
 
     class Meta:
         model = Page
-        fields = ('followers', 'followers_count')
+        fields = ('followers_count', 'followers')
 
     @staticmethod
     def get_followers_count(self):
         return self.followers.count()
 
 
-class OverviewRequestsSerializer(serializers.ModelSerializer):
+class ShowRequestsSerializer(serializers.ModelSerializer):
     follow_requests_count = serializers.SerializerMethodField()
     follow_requests = ListUserSerializer(many=True)
 
     class Meta:
         model = Page
-        fields = ('follow_requests', 'follow_requests_count')
+        fields = ('follow_requests_count', 'follow_requests')
 
     @staticmethod
     def get_follow_requests_count(self):
