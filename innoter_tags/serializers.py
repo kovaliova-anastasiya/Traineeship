@@ -24,3 +24,9 @@ class TagRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ('name',)
+
+
+class TagDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ('page',)

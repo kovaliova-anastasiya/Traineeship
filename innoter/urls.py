@@ -19,7 +19,7 @@ import innoter_user.urls
 from innoter_tags.urls import tag_router
 from innoter_pages.urls import page_router
 from innoter_posts.urls import post_router
-
+from innoter_user.urls import user_action_router
 
 
 urlpatterns = [
@@ -27,5 +27,6 @@ urlpatterns = [
     path('users/', include(innoter_user.urls)),
     path('', include(tag_router.urls)),
     path('', include(page_router.urls)),
-    path('', include(post_router.urls))
+    path('', include(post_router.urls)),
+    path('users/', include(user_action_router.urls))
 ]

@@ -5,7 +5,7 @@ class Page(models.Model):
     name = models.CharField(max_length=80)
     uuid = models.CharField(max_length=30, unique=True)
     description = models.TextField()
-    tags = models.ManyToManyField('innoter_tags.Tag', related_name='page')
+    tags = models.ManyToManyField('innoter_tags.Tag', related_name='page', blank=True)
 
     owner = models.ForeignKey('innoter_user.User', on_delete=models.CASCADE, related_name='pages')
     followers = models.ManyToManyField('innoter_user.User', related_name='follows')

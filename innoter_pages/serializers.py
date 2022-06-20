@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from innoter_pages.models import Page
-from innoter_user.models import User
+from innoter_posts.serializers import PostRetrieveSerializer
 from innoter_user.serializers import ListUserSerializer
 
 
@@ -19,9 +19,9 @@ class PageSerializer(serializers.ModelSerializer):
 
 
 class ShowTagsAttachedSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Page
-            fields = ('pk', 'tags')
+    class Meta:
+        model = Page
+        fields = ('tags',)
 
 
 class ShowFollowersSerializer(serializers.ModelSerializer):
@@ -61,17 +61,16 @@ class PageListSerializer(serializers.ModelSerializer):
 class PageCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ('name', 'uuid', 'description', 'tags',
-                  'owner', 'followers', 'image', 'is_private',
-                  'follow_requests', 'unblock_date')
+        fields = ('name', 'description', 'tags',
+                  'owner', 'image', 'is_private', 'uuid')
 
 
 class PageUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ('name', 'uuid', 'description', 'tags',
-                  'owner', 'followers', 'image', 'is_private',
-                  'follow_requests', 'unblock_date')
+        fields = ('name', 'description', 'tags',
+                  'owner', 'image', 'is_private')
+        name = serializers.CharField()
 
 
 class PageRetrieveSerializer(serializers.ModelSerializer):
@@ -80,3 +79,11 @@ class PageRetrieveSerializer(serializers.ModelSerializer):
         fields = ('name', 'uuid', 'description', 'tags',
                   'owner', 'followers', 'image', 'is_private',
                   'follow_requests', 'unblock_date')
+
+
+class ShowPostsOnPageSerializer(serializers.ModelSerializer):
+    posts = PostRetrieveSerializer(many=True)
+
+    class Meta:
+        model = Page
+        fields = ('posts',)

@@ -13,7 +13,6 @@ class LikeSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
-    # retweets_count = serializers.SerializerMethodField()
     likes = LikeSerializer(source='postlike_set', many=True, read_only=True)
 
     class Meta:

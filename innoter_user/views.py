@@ -1,12 +1,15 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-
 from innoter_user.models import User
+from innoter_user.permissions import RoleIsAdmin, UserIsOwner
+from innoter_user.role_action import RoleActionSerializer
 from innoter_user.serializers import RegisterUserSerializer, \
     UpdateUserSerializer, ListUserSerializer, \
     DetailUserSerializer, MyTokenObtainPairSerializer, \
-    DeleteUserSerializer
+    AttachRoleUserSerializer
+from rest_framework.decorators import action
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -14,19 +17,74 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_classes = {'list': ListUserSerializer,
                           'create': RegisterUserSerializer,
                           'update': UpdateUserSerializer,
-                          'retrieve': DetailUserSerializer,
-                          'delete': DeleteUserSerializer}
+                          'retrieve': DetailUserSerializer
+                          }
 
     def get_serializer_class(self):
         serializer = self.serializer_classes.get(self.action, None)
         return serializer
 
-    # def get_permissions(self):
-    #     if self.action in ['update', 'partial_update', 'destroy', 'list']:
-    #         self.permission_classes = [IsAuthenticated, ]
-    #     elif self.action in ['create']:
-    #         self.permission_classes = [AllowAny, ]
-    #     return super().get_permissions()
+
+class ACTIONUserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def register(self, request, *args, **kwargs):
+        serializer = RegisterUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def all(self, request, *args, **kwargs):
+        serializer = ListUserSerializer(self.queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'], permission_classes=[AllowAny])
+    def info(self, request, *args, **kwargs):
+        retrieve_user = self.get_object()
+        serializer = DetailUserSerializer(retrieve_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['patch'], permission_classes=[UserIsOwner])
+    def upd(self, request, *args, **kwargs):
+        update_me = self.get_object()
+        serializer = UpdateUserSerializer(instance=update_me, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['delete'], permission_classes=[UserIsOwner | RoleIsAdmin])
+    def delete(self, request, *args, **kwargs):
+        delete_user = self.get_object()
+        self.perform_destroy(delete_user)
+        return Response({'message': 'User has been deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['patch'], permission_classes=[RoleIsAdmin])
+    def attach_role(self, request, *args, **kwargs):
+
+        attach_role_user = self.get_object()
+
+        if 'roles' in request.data:
+            role_serializer = RoleActionSerializer(data=request.data)
+            if not role_serializer.is_valid():
+                return Response(role_serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+            role = role_serializer.data.get('roles')
+
+            if role == 'USER':
+                attach_role_user.role = attach_role_user.Roles.USER
+            elif role == 'MODERATOR':
+                attach_role_user.role = attach_role_user.Roles.MODERATOR
+            elif role == 'ADMIN':
+                attach_role_user.role = attach_role_user.Roles.ADMIN
+
+        user_serializer = AttachRoleUserSerializer(data=request.data, instance=attach_role_user, partial=True,
+                                               context={'request', request})
+        if not user_serializer.is_valid():
+            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user_serializer.save()
+        return Response(user_serializer.data, status=status.HTTP_200_OK)
 
 
 class MyObtainTokenPairView(TokenObtainPairView):

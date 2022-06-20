@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework import routers
-from innoter_user.views import UserViewSet, MyObtainTokenPairView
+from innoter_user.views import UserViewSet, MyObtainTokenPairView, ACTIONUserViewSet
 from rest_framework_simplejwt.views import TokenRefreshView
 
 user_router = routers.SimpleRouter()
@@ -16,4 +16,7 @@ urlpatterns = [
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', UserViewSet.as_view({'post': 'create'}), name='auth_register'),
 ]
+
+user_action_router = routers.SimpleRouter()
+user_action_router.register(r'', ACTIONUserViewSet)
 

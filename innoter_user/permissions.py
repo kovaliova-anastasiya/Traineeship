@@ -11,22 +11,22 @@ class SafeOnly(permissions.BasePermission):
 class UserIsOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
-        return obj.user.id == request.user.id
+        return obj.id == request.user.id
 
 
 class RoleIsAdmin(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return request.user.role == 'Admin'
+        return request.user.role == 'admin'
 
 
 class RoleIsModerator(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return request.user.role == 'Moderator'
+        return request.user.role == 'moderator'
 
 
 class RoleIsUser(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return request.user.role == 'User'
+        return request.user.role == 'user'

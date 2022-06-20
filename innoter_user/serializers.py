@@ -32,7 +32,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name')
+        fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name', 'role')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True}
@@ -41,7 +41,6 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
-
         return attrs
 
     def create(self, validated_data):
@@ -50,6 +49,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
+            role=validated_data['role']
         )
 
         user.set_password(validated_data['password'])
@@ -61,16 +61,17 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
+        fields = ('first_name', 'last_name', 'username', 'email', 'image_s3_path', 'title')
 
+        username = serializers.CharField()
 
 class DetailUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
+        fields = ('pk', 'first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
 
 
-class DeleteUserSerializer(serializers.ModelSerializer):
+class AttachRoleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
+        fields = ('pk', 'first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
