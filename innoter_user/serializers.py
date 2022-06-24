@@ -3,6 +3,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from innoter_user.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from innoter_user.presigned_url import create_presigned_url
+from innoter.settings import BUCKET
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -15,9 +17,20 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class ListUserSerializer(serializers.ModelSerializer):
+    presigned_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('pk', 'first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
+        fields = ('pk', 'first_name', 'last_name', 'username', 'email',
+                  'role', 'title', 'is_blocked', 'presigned_url')
+
+    @staticmethod
+    def get_presigned_url(self):
+        if not self.image_s3_path == '':
+            seven_days_as_seconds = 604800
+            generated_signed_url = create_presigned_url(BUCKET, self.image_s3_path, seven_days_as_seconds)
+            return generated_signed_url
+        return None
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):
@@ -32,7 +45,8 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name', 'role')
+        fields = ('username', 'password', 'password2', 'email',
+                  'first_name', 'last_name', 'role')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True}
@@ -61,17 +75,41 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username', 'email', 'image_s3_path', 'title')
+        fields = ('first_name', 'last_name', 'username',
+                  'email', 'title')
 
         username = serializers.CharField()
 
+
 class DetailUserSerializer(serializers.ModelSerializer):
+    presigned_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('pk', 'first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
+        fields = ('pk', 'first_name', 'last_name', 'username', 'email',
+                  'role', 'title', 'is_blocked', 'image_s3_path', 'presigned_url')
+
+    @staticmethod
+    def get_presigned_url(self):
+        if not self.image_s3_path == '':
+            seven_days_as_seconds = 604800
+            generated_signed_url = create_presigned_url(BUCKET, self.image_s3_path, seven_days_as_seconds)
+            return generated_signed_url
+        return None
 
 
 class AttachRoleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('pk', 'first_name', 'last_name', 'username', 'email', 'image_s3_path', 'role', 'title', 'is_blocked')
+        fields = ('pk', 'first_name', 'last_name', 'username', 'email',
+                  'image_s3_path', 'role', 'title', 'is_blocked')
+
+
+class FileSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+
+class UploadPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('image_s3_path',)

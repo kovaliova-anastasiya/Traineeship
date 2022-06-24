@@ -8,8 +8,14 @@ from innoter_user.role_action import RoleActionSerializer
 from innoter_user.serializers import RegisterUserSerializer, \
     UpdateUserSerializer, ListUserSerializer, \
     DetailUserSerializer, MyTokenObtainPairSerializer, \
-    AttachRoleUserSerializer
+    AttachRoleUserSerializer, FileSerializer, UploadPhotoSerializer
 from rest_framework.decorators import action
+from innoter.settings import AWS_ACCESS_KEY_ID, \
+    AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, \
+    BUCKET
+import os
+from datetime import datetime
+from boto3.session import Session
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -85,6 +91,28 @@ class ACTIONUserViewSet(viewsets.ModelViewSet):
             return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         user_serializer.save()
         return Response(user_serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['patch'], permission_classes=[UserIsOwner])
+    def upload_photo(self, request, *args, **kwargs):
+        update_my_page = self.get_object()
+
+        photo_serializer = FileSerializer(data=request.FILES)
+        photo_serializer.is_valid(raise_exception=True)
+
+        file_extension = os.path.splitext(str(request.FILES['file']))[1]
+        filename = datetime.now().strftime("%d-%m-%YT%H:%M:%S") + file_extension
+
+        session = Session(aws_access_key_id=AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                          region_name=AWS_DEFAULT_REGION)
+        s3 = session.resource('s3')
+        s3.Bucket(BUCKET).put_object(Key=filename, Body=request.FILES['file'])
+
+        filename_data = {'image_s3_path': filename}
+        serializer = UploadPhotoSerializer(instance=update_my_page, data=filename_data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class MyObtainTokenPairView(TokenObtainPairView):
