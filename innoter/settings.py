@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # from psycopg2 import connect
 
@@ -44,10 +45,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'user' application
     'innoter_user.apps.InnoterUserConfig',
-    # 'components' application
-    'innoter_components.apps.InnoterComponentsConfig',
+    'innoter_tags.apps.InnoterTagsConfig',
+    'innoter_pages.apps.InnoterPagesConfig',
+    'innoter_posts.apps.InnoterPostsConfig',
     'rest_framework',
 ]
 
@@ -95,7 +96,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
@@ -138,4 +138,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # что-то, чтобы выполнились миграции
 AUTH_USER_MODEL = 'innoter_user.User'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
+# # добавила, чтобы можно было блокировать страницы
+# DATE_INPUT_FORMATS = '%Y/%m/%d %H:%M:%S.%f'
