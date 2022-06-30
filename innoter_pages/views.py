@@ -3,7 +3,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from innoter_pages.models import Page
 from innoter_pages.serializers import ShowFollowersSerializer, \
-    ShowRequestsSerializer, ShowTagsAttachedSerializer, PageRetrieveSerializer, ShowPostsOnPageSerializer
+    ShowRequestsSerializer, ShowTagsAttachedSerializer,\
+    PageRetrieveSerializer, ShowPostsOnPageSerializer
 from innoter_pages.serializers import PageListSerializer, \
     PageCreateSerializer, PageUpdateSerializer, \
     PageSerializer
@@ -12,7 +13,6 @@ from innoter_user.models import User
 from innoter_pages.approve_action import ApproveActionSerializer
 from innoter_pages.block_action import BlockActionSerializer
 from rest_framework.decorators import action
-
 from innoter_user.permissions import UserIsOwner, RoleIsAdmin, RoleIsModerator
 
 

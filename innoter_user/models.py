@@ -12,7 +12,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=50)
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
-    image_s3_path = models.CharField(max_length=200, null=True, blank=True)
+    image_s3_path = models.CharField(max_length=200, blank=True)
     role = models.CharField(max_length=9, choices=Roles.choices)
 
     title = models.CharField(max_length=80)
