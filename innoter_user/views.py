@@ -1,3 +1,4 @@
+from django.http import QueryDict
 from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -8,14 +9,9 @@ from innoter_user.role_action import RoleActionSerializer
 from innoter_user.serializers import RegisterUserSerializer, \
     UpdateUserSerializer, ListUserSerializer, \
     DetailUserSerializer, MyTokenObtainPairSerializer, \
-    AttachRoleUserSerializer, FileSerializer, UploadPhotoSerializer
+    AttachRoleUserSerializer, UploadPhotoSerializer
 from rest_framework.decorators import action
-from innoter.settings import AWS_ACCESS_KEY_ID, \
-    AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, \
-    BUCKET
-import os
-from datetime import datetime
-from boto3.session import Session
+from innoter_user.photo_file import prepare_photo
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -36,7 +32,13 @@ class ACTIONUserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request, *args, **kwargs):
-        serializer = RegisterUserSerializer(data=request.data)
+        filename = prepare_photo(request)
+        data = dict(request.data)
+        del data['file']
+        data.update(filename)
+        for key in data.keys():
+            data[key] = data[key][0]
+        serializer = RegisterUserSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -92,24 +94,11 @@ class ACTIONUserViewSet(viewsets.ModelViewSet):
         user_serializer.save()
         return Response(user_serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['patch'], permission_classes=[UserIsOwner])
+    @action(detail=True, methods=['patch'], permission_classes=[AllowAny])
     def upload_photo(self, request, *args, **kwargs):
         update_my_page = self.get_object()
-
-        photo_serializer = FileSerializer(data=request.FILES)
-        photo_serializer.is_valid(raise_exception=True)
-
-        file_extension = os.path.splitext(str(request.FILES['file']))[1]
-        filename = datetime.now().strftime("%d-%m-%YT%H:%M:%S") + file_extension
-
-        session = Session(aws_access_key_id=AWS_ACCESS_KEY_ID,
-                          aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                          region_name=AWS_DEFAULT_REGION)
-        s3 = session.resource('s3')
-        s3.Bucket(BUCKET).put_object(Key=filename, Body=request.FILES['file'])
-
-        filename_data = {'image_s3_path': filename}
-        serializer = UploadPhotoSerializer(instance=update_my_page, data=filename_data)
+        filename = prepare_photo(request)
+        serializer = UploadPhotoSerializer(instance=update_my_page, data=filename)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data, status=status.HTTP_200_OK)
