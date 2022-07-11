@@ -41,14 +41,14 @@ AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_DEFAULT_REGION = os.environ.get('AWS_DEFAULT_REGION')
 BUCKET = os.environ.get('BUCKET')
 
-#SES CREDENTIALS
+# SES CREDENTIALS
 AWS_SES_REGION_NAME = os.environ.get('AWS_SES_REGION_NAME')
 AWS_SES_REGION_ENDPOINT = os.environ.get('AWS_SES_REGION_ENDPOINT')
 
-
 # 'DJANGO_ALLOWED_HOSTS' должен быть в виде одной строки с хостами разделенными символом пробела
 # Для примера: 'DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]'
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+# ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -59,10 +59,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'innoter_user.apps.InnoterUserConfig',
-    'innoter_tags.apps.InnoterTagsConfig',
-    'innoter_pages.apps.InnoterPagesConfig',
-    'innoter_posts.apps.InnoterPostsConfig',
+    'innoter_user',
+    'innoter_tags',
+    'innoter_pages',
+    'innoter_posts',
     'rest_framework',
 ]
 
@@ -101,12 +101,12 @@ WSGI_APPLICATION = 'innoter.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
-        "USER": os.environ.get("SQL_USER", "user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),
-        "PORT": os.environ.get("SQL_PORT", "5432"),
+        "ENGINE": 'django.db.backends.postgresql',
+        "NAME": os.environ.get("POSTGRES_NAME"),
+        "USER": os.environ.get("POSTGRES_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+        "HOST": 'db',
+        "PORT": '5432'
     }
 }
 

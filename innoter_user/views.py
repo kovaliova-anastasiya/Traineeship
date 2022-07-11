@@ -31,7 +31,7 @@ class ACTIONUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
-    def register(self, request, *args, **kwargs):
+    def rgstr(self, request, *args, **kwargs):
         filename = prepare_photo(request)
         data = dict(request.data)
         del data['file']

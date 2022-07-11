@@ -16,8 +16,8 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def all(self, request, *args, **kwargs):
-        tasks.celery_check()
         serializer = PostSerializer(self.queryset, many=True)
+        tasks.celery_check.delay()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'], permission_classes=[AllowAny])
@@ -36,7 +36,7 @@ class PostViewSet(viewsets.ModelViewSet):
             self.perform_create(serializer)
             print(page.followers.all())
             for user in page.followers.all():
-                tasks.send_newpost_notification(page.owner.email, user.email)
+                tasks.send_newpost_notification.delay(page.owner.email, user.email)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response({'message': 'Impossible to attach a tag to foreign page'},
