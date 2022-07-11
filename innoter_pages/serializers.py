@@ -53,7 +53,7 @@ class ShowRequestsSerializer(serializers.ModelSerializer):
 class PageListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ('name', 'uuid', 'description', 'tags',
+        fields = ('pk', 'name', 'uuid', 'description', 'tags',
                   'owner', 'followers', 'image', 'is_private',
                   'follow_requests', 'unblock_date')
 

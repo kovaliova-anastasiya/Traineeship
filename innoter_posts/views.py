@@ -8,6 +8,7 @@ from innoter_posts.serializers import PostListSerializer, \
     PostRetrieveSerializer, PostSerializer
 from innoter_posts.like_action import LikeActionSerializer
 from rest_framework.response import Response
+from innoter_posts import tasks
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -15,6 +16,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def all(self, request, *args, **kwargs):
+        tasks.celery_check()
         serializer = PostSerializer(self.queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -32,6 +34,9 @@ class PostViewSet(viewsets.ModelViewSet):
         if page.owner.pk == request.user.id:
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
+            print(page.followers.all())
+            for user in page.followers.all():
+                tasks.send_newpost_notification(page.owner.email, user.email)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response({'message': 'Impossible to attach a tag to foreign page'},
@@ -49,7 +54,6 @@ class PostViewSet(viewsets.ModelViewSet):
         else:
             return Response({'message': 'Impossible to attach a tag to foreign page'},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
     @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated])
     def like(self, request, *args, **kwargs):
