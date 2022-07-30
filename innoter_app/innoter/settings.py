@@ -15,8 +15,6 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 
-# from psycopg2 import connect
-
 
 load_dotenv()
 
@@ -93,6 +91,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'innoter.wsgi.application'
 

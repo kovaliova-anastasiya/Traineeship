@@ -28,5 +28,5 @@ urlpatterns = [
     path('', include(tag_router.urls)),
     path('', include(page_router.urls)),
     path('', include(post_router.urls)),
-    path('users/', include(user_action_router.urls))
+    path('users/', include(user_action_router.urls)),
 ]

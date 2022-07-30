@@ -1,4 +1,3 @@
-from django.http import QueryDict
 from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -12,6 +11,8 @@ from innoter_user.serializers import RegisterUserSerializer, \
     AttachRoleUserSerializer, UploadPhotoSerializer
 from rest_framework.decorators import action
 from innoter_user.photo_file import prepare_photo
+from dynamo.code.transmit_data import users
+from producer import publish
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -41,6 +42,9 @@ class ACTIONUserViewSet(viewsets.ModelViewSet):
         serializer = RegisterUserSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+
+        publish("create_user", serializer.data['pk'])
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
@@ -60,11 +64,13 @@ class ACTIONUserViewSet(viewsets.ModelViewSet):
         serializer = UpdateUserSerializer(instance=update_me, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        publish("update_user", update_me.pk)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['delete'], permission_classes=[UserIsOwner | RoleIsAdmin])
     def delete(self, request, *args, **kwargs):
         delete_user = self.get_object()
+        publish("delete_user", delete_user.pk)
         self.perform_destroy(delete_user)
         return Response({'message': 'User has been deleted'}, status=status.HTTP_204_NO_CONTENT)
 
@@ -92,16 +98,34 @@ class ACTIONUserViewSet(viewsets.ModelViewSet):
         if not user_serializer.is_valid():
             return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         user_serializer.save()
+        publish("update_user", attach_role_user.pk)
         return Response(user_serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['patch'], permission_classes=[AllowAny])
+    @action(detail=True, methods=['patch'], permission_classes=[UserIsOwner])
     def upload_photo(self, request, *args, **kwargs):
-        update_my_page = self.get_object()
+        update_user = self.get_object()
         filename = prepare_photo(request)
-        serializer = UploadPhotoSerializer(instance=update_my_page, data=filename)
+        serializer = UploadPhotoSerializer(instance=update_user, data=filename)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        publish("update_user", update_user.pk)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def create_table(self, request, *args, **kwargs):
+        publish("create_table_users")
+        return Response({'message': "Users dynamodb table created"},
+                        status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def transmit(self, request, *args, **kwargs):
+        try:
+            publish("transmit_users")
+            return Response({'message': "Existing users transmitted to dynamodb"},
+                            status=status.HTTP_200_OK)
+        except:
+            return Response({'message': "Table Users doesn't exist"},
+                            status=status.HTTP_200_OK)
 
 
 class MyObtainTokenPairView(TokenObtainPairView):

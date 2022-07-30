@@ -46,18 +46,18 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     username = serializers.JSONField(validators=[UniqueValidator(queryset=User.objects.all())])
     first_name = serializers.JSONField()
     last_name = serializers.JSONField()
-    role = serializers.JSONField()
+    # role = serializers.JSONField()
     image_s3_path = serializers.JSONField()
 
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'password2', 'email',
+        fields = ('pk', 'username', 'password', 'password2', 'email',
                   'first_name', 'last_name', 'role', 'image_s3_path')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True},
-            'image_s3_path': {'required': False}
+            'image_s3_path': {'required': False},
         }
 
     def validate(self, attrs):
@@ -71,7 +71,6 @@ class RegisterUserSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
-            role=validated_data['role'],
             image_s3_path=validated_data['image_s3_path']
         )
 

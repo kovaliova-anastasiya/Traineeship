@@ -17,7 +17,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('page', 'content', 'reply_to', 'created_at', 'updated_at', 'likes_count', 'likes')
+        fields = ('pk', 'page', 'content', 'reply_to', 'created_at', 'updated_at', 'likes_count', 'likes')
 
     @staticmethod
     def get_likes_count(self):
@@ -27,13 +27,13 @@ class PostSerializer(serializers.ModelSerializer):
 class PostListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('page', 'content', 'reply_to', 'created_at', 'updated_at')
+        fields = ('pk', 'page', 'content', 'reply_to', 'created_at', 'updated_at')
 
 
 class PostCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('page', 'content', 'reply_to', 'created_at', 'updated_at')
+        fields = ('pk', 'page', 'content', 'reply_to', 'created_at', 'updated_at')
 
 
 class PostUpdateSerializer(serializers.ModelSerializer):

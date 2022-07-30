@@ -8,7 +8,6 @@ from innoter_tags.serializers import TagListSerializer, \
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
-
 class PageTagViewSet(viewsets.ModelViewSet):
     serializer_class = TagListSerializer
 

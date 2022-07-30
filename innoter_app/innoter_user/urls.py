@@ -4,10 +4,7 @@ from innoter_user.views import UserViewSet, MyObtainTokenPairView, ACTIONUserVie
 from rest_framework_simplejwt.views import TokenRefreshView
 
 user_router = routers.SimpleRouter()
-# user_router.register(r'', UserViewSet)
-# user_router.register(r'login/', MyObtainTokenPairView, 'token_obtain_pair')
-# user_router.register(r'login/refresh/', TokenRefreshView.as_view(), 'token_refresh')
-# urlpatterns = user_router.urls
+
 
 urlpatterns = [
     path('', UserViewSet.as_view({'get': 'list'})),

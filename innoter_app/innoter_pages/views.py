@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from innoter_pages.models import Page
 from innoter_pages.serializers import ShowFollowersSerializer, \
-    ShowRequestsSerializer, ShowTagsAttachedSerializer,\
+    ShowRequestsSerializer, ShowTagsAttachedSerializer, \
     PageRetrieveSerializer, ShowPostsOnPageSerializer
 from innoter_pages.serializers import PageListSerializer, \
     PageCreateSerializer, PageUpdateSerializer, \
@@ -14,6 +14,8 @@ from innoter_pages.approve_action import ApproveActionSerializer
 from innoter_pages.block_action import BlockActionSerializer
 from rest_framework.decorators import action
 from innoter_user.permissions import UserIsOwner, RoleIsAdmin, RoleIsModerator
+from dynamo.code.transmit_data import pages
+from producer import publish
 
 
 class PageViewSet(viewsets.ModelViewSet):
@@ -44,15 +46,16 @@ class ACTIONPageViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], permission_classes=[AllowAny])
     def info(self, request, *args, **kwargs):
         current_page = self.get_object()
+        print(current_page)
         serializer = PageRetrieveSerializer(current_page)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def create_new(self, request, *args, **kwargs):
-        print(request.data)
         serializer = PageCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        publish("create_page", serializer.data['pk'])
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['patch'], permission_classes=[UserIsOwner])
@@ -61,11 +64,13 @@ class ACTIONPageViewSet(viewsets.ModelViewSet):
         serializer = PageUpdateSerializer(instance=update_my_page, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        publish("update_page", update_my_page.pk)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['delete'], permission_classes=[UserIsOwner | RoleIsAdmin | RoleIsModerator])
     def delete(self, request, *args, **kwargs):
         delete_page = self.get_object()
+        publish("delete_page", delete_page.pk)
         self.perform_destroy(delete_page)
         return Response({'message': 'Page has been deleted'}, status=status.HTTP_204_NO_CONTENT)
 
@@ -80,7 +85,6 @@ class ACTIONPageViewSet(viewsets.ModelViewSet):
         current_page = self.get_object()
         posts_on_page_serializer = ShowPostsOnPageSerializer(current_page)
         return Response(posts_on_page_serializer.data, status=status.HTTP_200_OK)
-
 
     @action(detail=True, methods=['get'], permission_classes=[AllowAny])
     def show_followers(self, request, *args, **kwargs):
@@ -118,6 +122,9 @@ class ACTIONPageViewSet(viewsets.ModelViewSet):
         if not page_serializer.is_valid():
             return Response(page_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         page_serializer.save()
+
+        publish("update_page", current_page.pk)
+
         return Response(page_serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['patch'], permission_classes=[UserIsOwner])
@@ -147,6 +154,9 @@ class ACTIONPageViewSet(viewsets.ModelViewSet):
         if not page_serializer.is_valid():
             return Response(page_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         page_serializer.save()
+
+        publish("update_page", current_page.pk)
+
         return Response(page_serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['patch'], permission_classes=[RoleIsAdmin | RoleIsModerator])
@@ -163,14 +173,34 @@ class ACTIONPageViewSet(viewsets.ModelViewSet):
 
             if action == 'BLOCK':
                 block_page.unblock_date = action_serializer.data.get('unblock_date')
+                page_serializer = PageSerializer(data=request.data, instance=block_page, partial=True,
+                                                 context={'request', request})
             if action == 'UNBLOCK':
-                block_page.unblock_date = None
+                page_serializer = PageSerializer(data={'unblock_date': None}, instance=block_page, partial=True,
+                                                 context={'request', request})
             print(action_serializer.data.get('unblock_date'))
             print(block_page.unblock_date)
 
-        page_serializer = PageSerializer(data=request.data, instance=block_page, partial=True,
-                                         context={'request', request})
         if not page_serializer.is_valid():
             return Response(page_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         page_serializer.save()
+
+        publish("update_page", block_page.pk)
+
         return Response(page_serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def create_table(self, request, *args, **kwargs):
+        publish("create_table_pages")
+        return Response({'message': "Pages dynamodb table created"},
+                        status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def transmit(self, request, *args, **kwargs):
+        try:
+            publish("transmit_pages")
+            return Response({'message': "Existing pages transmitted to dynamodb"},
+                            status=status.HTTP_200_OK)
+        except:
+            return Response({'message': "Table Pages doesn't exist"},
+                            status=status.HTTP_200_OK)

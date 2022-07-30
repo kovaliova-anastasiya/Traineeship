@@ -1,11 +1,12 @@
 version: '3.9'
+
 services:
   web:
     container_name: web
-    build: .
+    build: ./innoter_app
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - ./innoter_app:/innoter_app
     ports:
       - "8000:8000"
     environment:
@@ -15,6 +16,7 @@ services:
     depends_on:
       - db
       - worker
+      - rabbitmq
 
   db:
     container_name: db
@@ -29,11 +31,10 @@ services:
     ports:
       - "5438:5432"
 
-
   worker:
     container_name: celery_worker
     build:
-      context: .
+      context: ./innoter_app/
     depends_on:
       - rabbitmq
       - db
@@ -42,7 +43,32 @@ services:
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.9-alpine
-    restart: always
+    ports:
+      - "5672:5672"
+
+  microservice:
+    container_name: microservice
+    build: ./microservice
+    volumes:
+      - ./microservice:/microservice
+    ports:
+      - "5000:5000"
+    command: uvicorn code.main:app --reload --host 0.0.0.0 --port 5000
+
+  consumer:
+    container_name: consumer_up
+    build: ./innoter_app
+    command: python consumer.py --reload
+    volumes:
+      - ./innoter_app:/innoter_app
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+      - rabbitmq
+
 
 volumes:
   postgres_data:

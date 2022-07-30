@@ -1,9 +1,10 @@
 from django.db import models
+from uuid import uuid4
 
 
 class Page(models.Model):
     name = models.CharField(max_length=80)
-    uuid = models.CharField(max_length=30, unique=True)
+    uuid = models.CharField(max_length=50, unique=True, default=uuid4())
     description = models.TextField()
     tags = models.ManyToManyField('innoter_tags.Tag', related_name='page', blank=True)
 

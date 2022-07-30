@@ -61,7 +61,7 @@ class PageListSerializer(serializers.ModelSerializer):
 class PageCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ('name', 'description', 'tags',
+        fields = ('pk', 'name', 'description', 'tags',
                   'owner', 'image', 'is_private', 'uuid')
 
 
@@ -69,7 +69,7 @@ class PageUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
         fields = ('name', 'description', 'tags',
-                  'owner', 'image', 'is_private')
+                  'owner', 'image', 'is_private', 'uuid')
         name = serializers.CharField()
 
 
